@@ -1,0 +1,296 @@
+<!DOCTYPE html><html lang="en"> <head><!-- Global Metadata --><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="generator" content="Astro v5.13.7"><!-- Favicons --><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="apple-mobile-web-app-title" content="Pierre Ricadat's Tech Blog"><!-- Canonical URL --><link rel="canonical" href="https://blog.pierre-ricadat.com/graphql-in-scala-handling-side-effects/"><!-- Primary Meta Tags --><title>GraphQL in Scala: Handling side effects</title><meta name="title" content="GraphQL in Scala: Handling side effects"><meta name="description" content="In my Beginner's Guide to GraphQL in Scala, I created a simplistic resolver that just returned data from an immutable value loaded in memory. In real-life us...
+"><!-- Open Graph / Facebook --><meta property="og:type" content="website"><meta property="og:url" content="https://blog.pierre-ricadat.com/graphql-in-scala-handling-side-effects/"><meta property="og:title" content="GraphQL in Scala: Handling side effects"><meta property="og:description" content="In my Beginner's Guide to GraphQL in Scala, I created a simplistic resolver that just returned data from an immutable value loaded in memory. In real-life us...
+"><meta property="og:image" content="https://blog.pierre-ricadat.com/saral-og.jpg"><!-- Twitter --><meta property="twitter:card" content="summary_large_image"><meta property="twitter:url" content="https://blog.pierre-ricadat.com/graphql-in-scala-handling-side-effects/"><meta property="twitter:title" content="GraphQL in Scala: Handling side effects"><meta property="twitter:description" content="In my Beginner's Guide to GraphQL in Scala, I created a simplistic resolver that just returned data from an immutable value loaded in memory. In real-life us...
+"><meta property="twitter:image" content="https://blog.pierre-ricadat.com/saral-og.jpg"><!-- RSS Auto-discovery --><link rel="alternate" type="application/rss+xml" title="Pierre Ricadat's Tech Blog RSS Feed" href="https://blog.pierre-ricadat.com/rss.xml"><link rel="stylesheet" href="/_astro/_slug_.DSRIcTml.css"><script>!(function(w,p,f,c){if(!window.crossOriginIsolated && !navigator.serviceWorker) return;c=w[p]=Object.assign(w[p]||{},{"lib":"/~partytown/","debug":false});c[f]=(c[f]||[]).concat(["dataLayer.push"])})(window,'partytown','forward');/* Partytown 0.11.2 - MIT QwikDev */
+const t={preserveBehavior:!1},e=e=>{if("string"==typeof e)return[e,t];const[n,r=t]=e;return[n,{...t,...r}]},n=Object.freeze((t=>{const e=new Set;let n=[];do{Object.getOwnPropertyNames(n).forEach((t=>{"function"==typeof n[t]&&e.add(t)}))}while((n=Object.getPrototypeOf(n))!==Object.prototype);return Array.from(e)})());!function(t,r,o,i,a,s,c,l,d,p,u=t,f){function h(){f||(f=1,"/"==(c=(s.lib||"/~partytown/")+(s.debug?"debug/":""))[0]&&(d=r.querySelectorAll('script[type="text/partytown"]'),i!=t?i.dispatchEvent(new CustomEvent("pt1",{detail:t})):(l=setTimeout(v,(null==s?void 0:s.fallbackTimeout)||1e4),r.addEventListener("pt0",w),a?y(1):o.serviceWorker?o.serviceWorker.register(c+(s.swPath||"partytown-sw.js"),{scope:c}).then((function(t){t.active?y():t.installing&&t.installing.addEventListener("statechange",(function(t){"activated"==t.target.state&&y()}))}),console.error):v())))}function y(e){p=r.createElement(e?"script":"iframe"),t._pttab=Date.now(),e||(p.style.display="block",p.style.width="0",p.style.height="0",p.style.border="0",p.style.visibility="hidden",p.setAttribute("aria-hidden",!0)),p.src=c+"partytown-"+(e?"atomics.js?v=0.11.2":"sandbox-sw.html?"+t._pttab),r.querySelector(s.sandboxParent||"body").appendChild(p)}function v(n,o){for(w(),i==t&&(s.forward||[]).map((function(n){const[r]=e(n);delete t[r.split(".")[0]]})),n=0;n<d.length;n++)(o=r.createElement("script")).innerHTML=d[n].innerHTML,o.nonce=s.nonce,r.head.appendChild(o);p&&p.parentNode.removeChild(p)}function w(){clearTimeout(l)}s=t.partytown||{},i==t&&(s.forward||[]).map((function(r){const[o,{preserveBehavior:i}]=e(r);u=t,o.split(".").map((function(e,r,o){var a;u=u[o[r]]=r+1<o.length?u[o[r]]||(a=o[r+1],n.includes(a)?[]:{}):(()=>{let e=null;if(i){const{methodOrProperty:n,thisObject:r}=((t,e)=>{let n=t;for(let t=0;t<e.length-1;t+=1)n=n[e[t]];return{thisObject:n,methodOrProperty:e.length>0?n[e[e.length-1]]:void 0}})(t,o);"function"==typeof n&&(e=(...t)=>n.apply(r,...t))}return function(){let n;return e&&(n=e(arguments)),(t._ptf=t._ptf||[]).push(o,arguments),n}})()}))})),"complete"==r.readyState?h():(t.addEventListener("DOMContentLoaded",h),t.addEventListener("load",h))}(window,document,navigator,top,window.crossOriginIsolated);;(e=>{e.addEventListener("astro:before-swap",e=>{let r=document.body.querySelector("iframe[src*='/~partytown/']");if(r)e.newDocument.body.append(r)})})(document);</script></head> <body class="text-foreground bg-background font-light dark:text-foreground-dark dark:bg-background-dark transition-colors"> <header class="fixed top-0 w-full z-40 bg-background dark:bg-background-dark"> <nav class=""> <div class="app-container flex justify-between items-center py-5"> <a href="/" aria-label="Home"> <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+  <rect width="36" height="36" rx="8" fill="currentColor" opacity="0.1" />
+  <text x="18" y="25" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="currentColor" text-anchor="middle">PR</text>
+</svg> </a> <div class="gap-8 hidden md:flex items-center"> <a href="/" class="text-lg" target="_self" data-astro-cid-rieiwi5x> Blog </a> <a href="https://github.com/sponsors/ghostdogpr" class="text-lg" target="_blank" data-astro-cid-rieiwi5x> Sponsor </a>  <div class="border-[1px] border-foreground dark:border-foreground-dark rounded-full flex justify-center items-center text-foreground dark:text-foreground-dark [&#38;>*:hover]:brightness-75 md:opacity-80 [&#38;>*]:cursor-pointer" data-astro-cid-lgn464si> <button data-theme="theme-auto" aria-label="Auto Theme" title="Set theme to follow system preference" class="theme-button theme-auto" data-astro-cid-lgn464si> <svg width="1em" height="1em" aria-hidden="true" data-astro-cid-lgn464si="true" class="duration-0 text-2xl md:text-xl" data-icon="mdi:brightness-auto">   <symbol id="ai:mdi:brightness-auto" viewBox="0 0 24 24"><path fill="currentColor" d="m14.3 16l-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69L8.69 4H4v4.69L.69 12L4 15.31V20h4.69L12 23.31L15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></symbol><use href="#ai:mdi:brightness-auto"></use>  </svg> </button> <button data-theme="theme-light" aria-label="Light Theme" title="Set theme to light" class="theme-button theme-light" data-astro-cid-lgn464si> <svg width="1em" height="1em" aria-hidden="true" data-astro-cid-lgn464si="true" class="duration-0 text-2xl md:text-xl" data-icon="mdi:white-balance-sunny">   <symbol id="ai:mdi:white-balance-sunny" viewBox="0 0 24 24"><path fill="currentColor" d="m3.55 19.09l1.41 1.41l1.8-1.79l-1.42-1.42M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6s6-2.69 6-6c0-3.32-2.69-6-6-6m8 7h3v-2h-3m-2.76 7.71l1.8 1.79l1.41-1.41l-1.79-1.8M20.45 5l-1.41-1.4l-1.8 1.79l1.42 1.42M13 1h-2v3h2M6.76 5.39L4.96 3.6L3.55 5l1.79 1.81zM1 13h3v-2H1m12 9h-2v3h2"/></symbol><use href="#ai:mdi:white-balance-sunny"></use>  </svg> </button> <button data-theme="theme-dark" aria-label="Dark Theme" title="Set theme to dark" class="theme-button theme-dark" data-astro-cid-lgn464si> <svg width="1em" height="1em" aria-hidden="true" data-astro-cid-lgn464si="true" class="duration-0 text-2xl md:text-xl" data-icon="mdi:moon-and-stars">   <symbol id="ai:mdi:moon-and-stars" viewBox="0 0 24 24"><path fill="currentColor" d="m17.75 4.09l-2.53 1.94l.91 3.06l-2.63-1.81l-2.63 1.81l.91-3.06l-2.53-1.94L12.44 4l1.06-3l1.06 3zm3.5 6.91l-1.64 1.25l.59 1.98l-1.7-1.17l-1.7 1.17l.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85c-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14c.4-.4.82-.76 1.27-1.08c.75-.53 1.93.36 1.85 1.19c-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82c-2.81 3.14-2.7 7.96.31 10.98c3.02 3.01 7.84 3.12 10.98.31"/></symbol><use href="#ai:mdi:moon-and-stars"></use>  </svg> </button> </div>  </div> <button class="md:hidden cursor-pointer" id="nav-open-btn" aria-label="Open navigation menu" title="Open navigation menu"> <svg width="32" height="32" aria-hidden="true" data-icon="mdi:menu">   <symbol id="ai:mdi:menu" viewBox="0 0 24 24"><path fill="currentColor" d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></symbol><use href="#ai:mdi:menu"></use>  </svg> </button> <!-- Mobile nav --> <div class="translate-x-full md:hidden fixed top-0 right-0 bg-background dark:bg-background-dark h-screen w-5/6 px-8 py-6 transition-transform z-40 border-l-[1px] border-background" id="mobile-menu"> <button id="nav-close-btn" class="ml-auto block cursor-pointer" aria-label="Close navigation menu" title="Close navigation menu"> <svg width="32" height="32" aria-hidden="true" data-icon="mdi:close">   <symbol id="ai:mdi:close" viewBox="0 0 24 24"><path fill="currentColor" d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12z"/></symbol><use href="#ai:mdi:close"></use>  </svg> </button> <div class="flex flex-col h-full items-start gap-8 pt-16"> <a href="/" class="text-4xl font-light" target="_self" data-astro-cid-rieiwi5x> Blog </a> <a href="https://github.com/sponsors/ghostdogpr" class="text-4xl font-light" target="_blank" data-astro-cid-rieiwi5x> Sponsor </a>  <div class="mt-4 border-[1px] border-foreground dark:border-foreground-dark rounded-full flex justify-center items-center text-foreground dark:text-foreground-dark [&#38;>*:hover]:brightness-75 md:opacity-80 [&#38;>*]:cursor-pointer" data-astro-cid-lgn464si> <button data-theme="theme-auto" aria-label="Auto Theme" title="Set theme to follow system preference" class="theme-button theme-auto" data-astro-cid-lgn464si> <svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" data-astro-cid-lgn464si="true" class="duration-0 text-2xl md:text-xl" data-icon="mdi:brightness-auto">   <use href="#ai:mdi:brightness-auto"></use>  </svg> </button> <button data-theme="theme-light" aria-label="Light Theme" title="Set theme to light" class="theme-button theme-light" data-astro-cid-lgn464si> <svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" data-astro-cid-lgn464si="true" class="duration-0 text-2xl md:text-xl" data-icon="mdi:white-balance-sunny">   <use href="#ai:mdi:white-balance-sunny"></use>  </svg> </button> <button data-theme="theme-dark" aria-label="Dark Theme" title="Set theme to dark" class="theme-button theme-dark" data-astro-cid-lgn464si> <svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" data-astro-cid-lgn464si="true" class="duration-0 text-2xl md:text-xl" data-icon="mdi:moon-and-stars">   <use href="#ai:mdi:moon-and-stars"></use>  </svg> </button> </div>  </div> </div> </div> </nav> <script type="module">function e(){document.querySelector("#mobile-menu")?.classList.toggle("mobile-nav-open")}document.querySelector("#nav-open-btn")?.addEventListener("click",e);document.querySelector("#nav-close-btn")?.addEventListener("click",e);</script> </header> <script>
+	function reComputeTheme() {
+		if (
+			localStorage.theme === 'dark' ||
+			(!('theme' in localStorage) &&
+				window.matchMedia('(prefers-color-scheme: dark)').matches)
+		) {
+			document.documentElement.classList.add('dark')
+		} else {
+			document.documentElement.classList.remove('dark')
+		}
+
+		const theme = localStorage.theme || 'auto'
+		document
+			.querySelectorAll(`[data-theme="theme-${theme}"]`)
+			.forEach((el) => el.classList.add('active'))
+	}
+
+	function addThemeEventListeners() {
+		themeButtons = document.querySelectorAll('.theme-button')
+		themeButtons.forEach((button) => {
+			button.addEventListener('click', () => {
+				themeButtons.forEach((btn) => btn.classList.remove('active'))
+				button.classList.add('active')
+				if (button.dataset.theme === 'theme-auto') {
+					localStorage.removeItem('theme')
+					reComputeTheme()
+				} else {
+					localStorage.theme = button.dataset.theme.replace('theme-', '')
+					document.documentElement.classList.toggle(
+						'dark',
+						button.dataset.theme === 'theme-dark'
+					)
+				}
+			})
+		})
+	}
+
+	// Set active class on OS theme change
+	window
+		.matchMedia('(prefers-color-scheme: dark)')
+		.addEventListener('change', (_e) => {
+			reComputeTheme()
+		})
+
+	// run recomputeTheme when screen crosses 768px
+	window.matchMedia('(min-width: 768px)').addEventListener('change', (_e) => {
+		addThemeEventListeners()
+		reComputeTheme()
+	})
+
+	reComputeTheme()
+
+	// Run on page load
+	window.addEventListener('DOMContentLoaded', () => {
+		addThemeEventListeners()
+		reComputeTheme()
+	})
+</script>  <main> <article> <div class="app-container flex flex-col lg:flex-row-reverse justify-between gap-8 py-24 relative"> <div class="md:w-1/4 relative"> <div class="sticky top-0 md:top-28 hidden lg:block"> <div></div> </div> </div> <div class="grow w-full md:max-w-[75ch]"> <div> <h1 class="text-4xl sm:text-5xl leading-snug pt-12 font-bold"> GraphQL in Scala: Handling side effects </h1> <div class="text-lg flex items-center gap-4 flex-wrap py-8"> <!-- Publish date --> <span> <svg width="1em" height="1em" class="inline-block text-primary dark:text-primary-dark" data-icon="mdi:calendar-month-outline">   <symbol id="ai:mdi:calendar-month-outline" viewBox="0 0 24 24"><path fill="currentColor" d="M7 11h2v2H7zm14-6v14c0 1.11-.89 2-2 2H5a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h1V1h2v2h8V1h2v2h1a2 2 0 0 1 2 2M5 7h14V5H5zm14 12V9H5v10zm-4-6v-2h2v2zm-4 0v-2h2v2zm-4 2h2v2H7zm8 2v-2h2v2zm-4 0v-2h2v2z"/></symbol><use href="#ai:mdi:calendar-month-outline"></use>  </svg> <time datetime="2024-01-20T00:00:00.000Z"> 20 Jan 2024 </time> </span> <!-- Updated date -->  <!-- Read time --> <span> <svg width="1em" height="1em" class="inline-block text-primary dark:text-primary-dark" data-icon="mdi:clock-time-four-outline">   <symbol id="ai:mdi:clock-time-four-outline" viewBox="0 0 24 24"><path fill="currentColor" d="M12 20c4.4 0 8-3.6 8-8s-3.6-8-8-8s-8 3.6-8 8s3.6 8 8 8m0-18c5.5 0 10 4.5 10 10s-4.5 10-10 10S2 17.5 2 12S6.5 2 12 2m5 11.9l-.7 1.3l-5.3-2.9V7h1.5v4.4z"/></symbol><use href="#ai:mdi:clock-time-four-outline"></use>  </svg> 12 min read </span> </div>  </div> <div class="prose prose-neutral prose-lg md:prose-xl dark:prose-invert prose-img:rounded-xl prose-figure:text-center prose-img:mx-auto">  <p>In my <a href="https://blog.pierre-ricadat.com/a-beginners-guide-to-graphql-in-scala">Beginner’s Guide to GraphQL in Scala</a>, I created a simplistic resolver that just returned data from an immutable value loaded in memory. In real-life use cases, things are usually quite different: data may come from a database, external APIs, or various other locations. We might need to call functions that return <code>Future</code>, Monix <code>Task</code>, <code>ZIO</code>, or even an abstract <code>F[_]</code> with cats-effect typeclasses. In this article, we will see how to handle various types of effects in our resolvers and examine their specificities.</p>
+<p>All code snippets can be reproduced in <a href="https://scala-cli.virtuslab.org/"><strong>Scala CLI</strong></a> (using Scala 3, which is the default) by adding the following directive and imports (when more imports are required, they will be added to individual snippets):</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="scala"><code><span class="line"><span style="color:#6A737D">//> </span><span style="color:#F97583">using</span><span style="color:#B392F0"> dep</span><span style="color:#9ECBFF"> com.github.ghostdogpr::caliban-quick:2.5.1</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#B392F0"> caliban</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">*</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#B392F0"> caliban</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">schema</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">*</span></span></code></pre>
+<h3 id="dealing-with-impure-functions-and-futures">Dealing with impure functions and Futures</h3>
+<p>In functional programming, a function is considered <a href="https://docs.scala-lang.org/scala3/book/fp-pure-functions.html"><em>pure</em></a> if:</p>
+<ul>
+<li>
+<p>it is deterministic: the same input will always give the same output</p>
+</li>
+<li>
+<p>the output depends only on the input and the function implementation (it does not depend on some hidden context)</p>
+</li>
+<li>
+<p>it computes an output and does not have side effects (it does not modify the world around it)</p>
+</li>
+</ul>
+<p>Let’s take a simple example to illustrate a problem that occurs when you try to use impure functions in your resolvers.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="scala"><code><span class="line"><span style="color:#F97583">import</span><span style="color:#B392F0"> scala</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">util</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">Random</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">case</span><span style="color:#F97583"> class</span><span style="color:#B392F0"> Query</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">number</span><span style="color:#E1E4E8">: </span><span style="color:#B392F0">Int</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">derives</span><span style="color:#B392F0"> Schema</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">SemiAuto</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#E1E4E8">println(render[</span><span style="color:#B392F0">Query</span><span style="color:#E1E4E8">])</span></span>
+<span class="line"><span style="color:#6A737D">// type Query {</span></span>
+<span class="line"><span style="color:#6A737D">//   number: Int!</span></span>
+<span class="line"><span style="color:#6A737D">// }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">val</span><span style="color:#FFAB70"> random</span><span style="color:#F97583">   =</span><span style="color:#F97583"> new</span><span style="color:#B392F0"> Random</span><span style="color:#E1E4E8">()</span></span>
+<span class="line"><span style="color:#F97583">val</span><span style="color:#FFAB70"> resolver</span><span style="color:#F97583"> =</span><span style="color:#B392F0"> Query</span><span style="color:#E1E4E8">(number </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> random.nextInt)</span></span>
+<span class="line"><span style="color:#F97583">val</span><span style="color:#FFAB70"> api</span><span style="color:#F97583">      =</span><span style="color:#E1E4E8"> graphQL(</span><span style="color:#B392F0">RootResolver</span><span style="color:#E1E4E8">(resolver))</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#B392F0"> caliban</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">quick</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">*</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#E1E4E8">api.unsafe.runServer(</span><span style="color:#79B8FF">8088</span><span style="color:#E1E4E8">, </span><span style="color:#9ECBFF">"/api/graphql"</span><span style="color:#E1E4E8">)</span></span></code></pre>
+<p>This defines a simple schema with a single field <code>number</code> that returns an Integer coming from the impure function <code>Random#nextInt</code> (this function is impure because it is not deterministic: each execution will give a different result).</p>
+<p>If you try to run this example and send the GraphQL query <code>{ number }</code> several times to the API, you will notice that you always receive the same result, which is unexpected. That actually makes sense if you look at the example in detail: we create a single <code>resolver</code> value, which means there will be a single call to <code>random.nextInt</code> and this call will happen when we create <code>resolver</code>, not when a query is executed. That explains why it always returns the same value.</p>
+<p>The solution to this issue is to make the field <em>lazy</em>. By lazy, we mean that we don’t want the field to be executed too quickly; instead, we want it to be executed each time we actually resolve our field. To do that, we need to change the field type from an <code>Int</code> to a <em>function</em> that returns an <code>Int</code>. Since a function requires an input type, but we don’t need any input here, we will use <code>Unit</code> as an input.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="scala"><code><span class="line"><span style="color:#F97583">import</span><span style="color:#B392F0"> scala</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">util</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">Random</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">case</span><span style="color:#F97583"> class</span><span style="color:#B392F0"> Query</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">number</span><span style="color:#E1E4E8">: () </span><span style="color:#F97583">=></span><span style="color:#B392F0"> Int</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">derives</span><span style="color:#B392F0"> Schema</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">SemiAuto</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#E1E4E8">println(render[</span><span style="color:#B392F0">Query</span><span style="color:#E1E4E8">])</span></span>
+<span class="line"><span style="color:#6A737D">// type Query {</span></span>
+<span class="line"><span style="color:#6A737D">//   number: Int!</span></span>
+<span class="line"><span style="color:#6A737D">// }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">val</span><span style="color:#FFAB70"> random</span><span style="color:#F97583">   =</span><span style="color:#F97583"> new</span><span style="color:#B392F0"> Random</span><span style="color:#E1E4E8">()</span></span>
+<span class="line"><span style="color:#F97583">val</span><span style="color:#FFAB70"> resolver</span><span style="color:#F97583"> =</span><span style="color:#B392F0"> Query</span><span style="color:#E1E4E8">(number </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> () </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> random.nextInt)</span></span>
+<span class="line"><span style="color:#F97583">val</span><span style="color:#FFAB70"> api</span><span style="color:#F97583">      =</span><span style="color:#E1E4E8"> graphQL(</span><span style="color:#B392F0">RootResolver</span><span style="color:#E1E4E8">(resolver))</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#B392F0"> caliban</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">quick</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">*</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#E1E4E8">api.unsafe.runServer(</span><span style="color:#79B8FF">8088</span><span style="color:#E1E4E8">, </span><span style="color:#9ECBFF">"/api/graphql"</span><span style="color:#E1E4E8">)</span></span></code></pre>
+<p>We’ve just made two changes: <code>number</code> is now of type <code>() => Int</code>, and the <code>number</code> field value has been updated accordingly from <code>random.nextInt</code> to <code>() => random.nextInt</code>. Notice how our GraphQL schema remains the same: <code>() => Int</code> and <code>Int</code> produce the same output type <code>Int!</code> during schema derivation. With that value being a function, it will not run when <code>resolver</code> is created, but each time the field is resolved instead.</p>
+<p>What if we wanted to run an asynchronous computation? In Scala, one solution included in the standard library is the <code>Future</code> data type. For this example, let’s wrap our random call inside a <code>Future</code>.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="scala"><code><span class="line"><span style="color:#F97583">import</span><span style="color:#B392F0"> scala</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">concurrent</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">Future</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#B392F0"> scala</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">util</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">Random</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#B392F0"> concurrent</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">ExecutionContext</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">Implicits</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">global</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">case</span><span style="color:#F97583"> class</span><span style="color:#B392F0"> Query</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">number</span><span style="color:#E1E4E8">: </span><span style="color:#B392F0">Future</span><span style="color:#E1E4E8">[</span><span style="color:#B392F0">Int</span><span style="color:#E1E4E8">]) </span><span style="color:#F97583">derives</span><span style="color:#B392F0"> Schema</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">SemiAuto</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">val</span><span style="color:#FFAB70"> resolver</span><span style="color:#F97583"> =</span><span style="color:#B392F0"> Query</span><span style="color:#E1E4E8">(number </span><span style="color:#F97583">=</span><span style="color:#B392F0"> Future</span><span style="color:#E1E4E8"> { random.nextInt })</span></span></code></pre>
+<p>Try running the same example and you will see that we’re back to the original problem: we always receive the same result. The reason is that Scala’s <code>Future</code> is not lazy but <em>eager</em>: the computation starts as soon as you create the <code>Future</code>, and the result is memoized so that each time you use the same <code>Future</code> you will get the same result.</p>
+<p>What if we must use <code>Future</code> then? Maybe our database library forces us to do so. In that case, we can use the exact same “laziness” technique and transform our field into a function from <code>Unit</code> to a <code>Future</code>.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="scala"><code><span class="line"><span style="color:#F97583">case</span><span style="color:#F97583"> class</span><span style="color:#B392F0"> Query</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">number</span><span style="color:#E1E4E8">: () </span><span style="color:#F97583">=></span><span style="color:#B392F0"> Future</span><span style="color:#E1E4E8">[</span><span style="color:#B392F0">Int</span><span style="color:#E1E4E8">]) </span><span style="color:#F97583">derives</span><span style="color:#B392F0"> Schema</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">SemiAuto</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">val</span><span style="color:#FFAB70"> resolver</span><span style="color:#F97583"> =</span><span style="color:#B392F0"> Query</span><span style="color:#E1E4E8">(number </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> () </span><span style="color:#F97583">=></span><span style="color:#B392F0"> Future</span><span style="color:#E1E4E8"> { random.nextInt })</span></span></code></pre>
+<p>That did the trick! Note that when your field uses arguments, it is already a function so there’s no need to use <code>Unit</code>.</p>
+<p>If you tried this on your own, you might have noticed a slight difference between the <code>Future</code> case and the previous “raw” example.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="scala"><code><span class="line"><span style="color:#E1E4E8">println(render[</span><span style="color:#B392F0">Query</span><span style="color:#E1E4E8">])</span></span>
+<span class="line"><span style="color:#6A737D">// type Query {</span></span>
+<span class="line"><span style="color:#6A737D">//   number: Int</span></span>
+<span class="line"><span style="color:#6A737D">// }</span></span></code></pre>
+<p>In the GraphQL schema, the type of <code>number</code> changed from a non-nullable <code>Int!</code> to a nullable <code>Int</code>. Why? The main difference when using <code>Future</code> is that a <code>Future</code> might fail (see the <code>Future.failed</code> constructor), so there may be an error while we try to resolve our field.</p>
+<p>In GraphQL, there are two ways errors can be handled:</p>
+<ul>
+<li>
+<p>If an error occurs on a nullable field, the field returns <code>null</code> and the error is included in the response in an <code>errors</code> field.</p>
+</li>
+<li>
+<p>If an error occurs on a non-nullable field, it is propagated to the parent field, where the same process is repeated until the root.</p>
+</li>
+</ul>
+<p>In Caliban, we’ve chosen to implement the first behavior by default: if a field returns a <code>Future</code>, it becomes nullable so that any error will be reported at that field level. If you want to control nullability explicitly, you can use the recently-added (in 2.5.1) annotations <code>@GQLNullable</code> and <code>@GQLNonNullable</code> on your fields, but a better option might be to switch to an effect type that is more powerful, for example <code>ZIO</code>.</p>
+<p>Here’s what you will get if our Future returns an error:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="json"><code><span class="line"><span style="color:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#79B8FF">  "data"</span><span style="color:#E1E4E8">: {</span></span>
+<span class="line"><span style="color:#79B8FF">    "number"</span><span style="color:#E1E4E8">: </span><span style="color:#79B8FF">null</span></span>
+<span class="line"><span style="color:#E1E4E8">  },</span></span>
+<span class="line"><span style="color:#79B8FF">  "errors"</span><span style="color:#E1E4E8">: [</span></span>
+<span class="line"><span style="color:#E1E4E8">    {</span></span>
+<span class="line"><span style="color:#79B8FF">      "message"</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"Effect failure"</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#79B8FF">      "locations"</span><span style="color:#E1E4E8">: [</span></span>
+<span class="line"><span style="color:#E1E4E8">        {</span></span>
+<span class="line"><span style="color:#79B8FF">          "line"</span><span style="color:#E1E4E8">: </span><span style="color:#79B8FF">1</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#79B8FF">          "column"</span><span style="color:#E1E4E8">: </span><span style="color:#79B8FF">3</span></span>
+<span class="line"><span style="color:#E1E4E8">        }</span></span>
+<span class="line"><span style="color:#E1E4E8">      ],</span></span>
+<span class="line"><span style="color:#79B8FF">      "path"</span><span style="color:#E1E4E8">: [</span></span>
+<span class="line"><span style="color:#9ECBFF">        "number"</span></span>
+<span class="line"><span style="color:#E1E4E8">      ]</span></span>
+<span class="line"><span style="color:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#E1E4E8">  ]</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span></code></pre>
+<h3 id="introducing-lazy-zio-effects">Introducing lazy ZIO effects</h3>
+<p><a href="https://zio.dev/">ZIO</a> is a library for type-safe, composable asynchronous and concurrent programming in Scala, and offers an interesting alternative to <code>Future</code>. If you are not familiar with ZIO, think of it as a <code>Future</code> with these major key differences (ZIO has a lot more to it, but I will only focus on what matters in the context of this article):</p>
+<ul>
+<li>
+<p>ZIO is truly lazy: unlike eager <code>Future</code>, creating a <code>ZIO</code> value will not start any computation. That means you can reuse a single ZIO and run it multiple times.</p>
+</li>
+<li>
+<p>ZIO has 3 type parameters: <code>ZIO[R, E, A]</code>. A ZIO may require a context <code>R</code> to run, might fail with an error of type <code>E</code>, or succeed with a result of type <code>A</code>. You can think of it as <code>R => Future[Either[E, A]]</code> baked into a single type.</p>
+</li>
+</ul>
+<p>One more thing to know before going further is that ZIO comes with a few aliases to use fewer type parameters in simpler cases:</p>
+<ul>
+<li>
+<p><code>UIO[A]</code> is a ZIO that does not require any context (in that case <code>R</code> is <code>Any</code>) and cannot fail (<code>E</code> is <code>Nothing</code>).</p>
+</li>
+<li>
+<p><code>Task[A]</code> is a ZIO that does not require any context and can fail with a <code>Throwable</code>. This is quite close to <code>Future[A]</code>, but lazy.</p>
+</li>
+<li>
+<p><code>IO[E, A]</code> is a ZIO that does not require any context and can fail with an error of type E.</p>
+</li>
+</ul>
+<p>The laziness of ZIO means that we no longer have issues with resolvers being executed too early: you can directly use it without using the <code>() =></code> trick we’ve seen above.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="scala"><code><span class="line"><span style="color:#F97583">import</span><span style="color:#B392F0"> zio</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">*</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">case</span><span style="color:#F97583"> class</span><span style="color:#B392F0"> Query</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">number</span><span style="color:#E1E4E8">: </span><span style="color:#B392F0">UIO</span><span style="color:#E1E4E8">[</span><span style="color:#B392F0">Int</span><span style="color:#E1E4E8">]) </span><span style="color:#F97583">derives</span><span style="color:#B392F0"> Schema</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">SemiAuto</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#E1E4E8">println(render[</span><span style="color:#B392F0">Query</span><span style="color:#E1E4E8">])</span></span>
+<span class="line"><span style="color:#6A737D">// type Query {</span></span>
+<span class="line"><span style="color:#6A737D">//   number: Int!</span></span>
+<span class="line"><span style="color:#6A737D">// }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">val</span><span style="color:#FFAB70"> resolver</span><span style="color:#F97583"> =</span><span style="color:#B392F0"> Query</span><span style="color:#E1E4E8">(number </span><span style="color:#F97583">=</span><span style="color:#B392F0"> Random</span><span style="color:#E1E4E8">.nextInt)</span></span>
+<span class="line"><span style="color:#F97583">val</span><span style="color:#FFAB70"> api</span><span style="color:#F97583">      =</span><span style="color:#E1E4E8"> graphQL(</span><span style="color:#B392F0">RootResolver</span><span style="color:#E1E4E8">(resolver))</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#B392F0"> caliban</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">quick</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">*</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#E1E4E8">api.unsafe.runServer(</span><span style="color:#79B8FF">8088</span><span style="color:#E1E4E8">, </span><span style="color:#9ECBFF">"/api/graphql"</span><span style="color:#E1E4E8">)</span></span></code></pre>
+<p>That’s it! We used the built-in function <code>Random.nextInt</code> to get a random number and received a <code>UIO[Int]</code> in return, meaning that this function doesn’t require any context and that it cannot fail. Since it cannot fail, our field is non-nullable in our schema.</p>
+<p>If we wanted to have the field nullable, we could simply change it to <code>Task</code>.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="scala"><code><span class="line"><span style="color:#F97583">case</span><span style="color:#F97583"> class</span><span style="color:#B392F0"> Query</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">number</span><span style="color:#E1E4E8">: </span><span style="color:#B392F0">Task</span><span style="color:#E1E4E8">[</span><span style="color:#B392F0">Int</span><span style="color:#E1E4E8">]) </span><span style="color:#F97583">derives</span><span style="color:#B392F0"> Schema</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">SemiAuto</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#E1E4E8">println(render[</span><span style="color:#B392F0">Query</span><span style="color:#E1E4E8">])</span></span>
+<span class="line"><span style="color:#6A737D">// type Query {</span></span>
+<span class="line"><span style="color:#6A737D">//   number: Int</span></span>
+<span class="line"><span style="color:#6A737D">// }</span></span></code></pre>
+<p>Because <code>Task</code> might fail, we’re back to a nullable <code>Int</code>. With ZIO, you can easily transform a <code>Task</code> to a <code>UIO</code> using the function <code>.orDie</code>. This is possible because ZIO has two error channels: expected errors, expressed by the <code>E</code> type parameter, and unexpected errors, which are not present in the type signature but will fail the computation nonetheless. This makes it easy to configure the nullability of your fields when defining a schema using ZIO. If you use <code>orDie</code> and fail on a non-nullable field, the error will be propagated to the parent field.</p>
+<p>Remember the <code>Any</code> in <code>Schema[Any, A]</code> from my <a href="https://blog.pierre-ricadat.com/graphql-in-scala-advanced-schema-generation">previous article on schema generation</a>? This comes from the <code>R</code> type parameter of ZIO. If you use a <code>ZIO</code> that requires a context <code>R</code>, you will need a <code>Schema</code> for that <code>R</code> as well, and the resulting <code>GraphQL</code> object too. Let’s look at an example.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="scala"><code><span class="line"><span style="color:#F97583">import</span><span style="color:#B392F0"> zio</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">*</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">case</span><span style="color:#F97583"> class</span><span style="color:#B392F0"> Config</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">value</span><span style="color:#E1E4E8">: </span><span style="color:#B392F0">Int</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#F97583">case</span><span style="color:#F97583"> class</span><span style="color:#B392F0"> Query</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">number</span><span style="color:#E1E4E8">: </span><span style="color:#B392F0">ZIO</span><span style="color:#E1E4E8">[</span><span style="color:#B392F0">Config</span><span style="color:#E1E4E8">, </span><span style="color:#B392F0">Nothing</span><span style="color:#E1E4E8">, </span><span style="color:#B392F0">Int</span><span style="color:#E1E4E8">])</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">given</span><span style="color:#B392F0"> Schema</span><span style="color:#E1E4E8">[</span><span style="color:#B392F0">Config</span><span style="color:#E1E4E8">, </span><span style="color:#B392F0">Query</span><span style="color:#E1E4E8">] </span><span style="color:#F97583">=</span><span style="color:#B392F0"> Schema</span><span style="color:#E1E4E8">.gen</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#E1E4E8">println(renderWith[</span><span style="color:#B392F0">Config</span><span style="color:#E1E4E8">, </span><span style="color:#B392F0">Query</span><span style="color:#E1E4E8">])</span></span>
+<span class="line"><span style="color:#6A737D">// type Query {</span></span>
+<span class="line"><span style="color:#6A737D">//   number: Int!</span></span>
+<span class="line"><span style="color:#6A737D">// }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">val</span><span style="color:#FFAB70"> resolver</span><span style="color:#F97583"> =</span><span style="color:#B392F0"> Query</span><span style="color:#E1E4E8">(number </span><span style="color:#F97583">=</span><span style="color:#B392F0"> ZIO</span><span style="color:#E1E4E8">.serviceWith[</span><span style="color:#B392F0">Config</span><span style="color:#E1E4E8">](_.value))</span></span>
+<span class="line"><span style="color:#F97583">val</span><span style="color:#FFAB70"> api</span><span style="color:#F97583">:</span><span style="color:#B392F0"> GraphQL</span><span style="color:#E1E4E8">[</span><span style="color:#B392F0">Config</span><span style="color:#E1E4E8">] </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> graphQL(</span><span style="color:#B392F0">RootResolver</span><span style="color:#E1E4E8">(resolver))</span></span></code></pre>
+<p>This time, our field <code>number</code> returns type <code>ZIO[Config, Nothing, Int]</code>. That means we need a <code>Config</code> in order to run it. The implementation of the field uses <code>ZIO.serviceWith[Config]</code> to access that contextual <code>Config</code> and get the value out of it. Another noticeable difference is that we are using <code>renderWith</code>, a function that allows specifying a given <code>R</code> (previously we used the simpler <code>render</code> that works when <code>R</code> is <code>Any</code>). Note how <code>api</code> is of type <code>GraphQL[Config]</code> now instead of <code>GraphQL[Any]</code> as in all previous examples.</p>
+<p>In order to run our server, we first need to <em>provide</em> a value for <code>Config</code>, otherwise our code will not compile. This can be done using <code>provideLayer</code> and creating a simple layer with <code>ZLayer.succeed</code>. <code>ZLayer</code> is a type designed to assemble inter-connected dependencies in a type-safe and convenient manner. I am not going to cover it in detail here, but you can refer to the <a href="https://zio.dev/reference/contextual/zlayer/">ZIO documentation</a> for more information.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="scala"><code><span class="line"><span style="color:#F97583">import</span><span style="color:#B392F0"> caliban</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">quick</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">*</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#E1E4E8">api</span></span>
+<span class="line"><span style="color:#E1E4E8">  .unsafe</span></span>
+<span class="line"><span style="color:#E1E4E8">  .provideLayer(</span><span style="color:#B392F0">ZLayer</span><span style="color:#E1E4E8">.succeed(</span><span style="color:#B392F0">Config</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">3</span><span style="color:#E1E4E8">)))</span></span>
+<span class="line"><span style="color:#E1E4E8">  .runServer(</span><span style="color:#79B8FF">8088</span><span style="color:#E1E4E8">, </span><span style="color:#9ECBFF">"/api/graphql"</span><span style="color:#E1E4E8">)</span></span></code></pre>
+<p>Once our <code>Config</code> is provided, the code compiles and produces the expected result. In a typical application, <code>Config</code> would come from parsing configuration files. The context <code>R</code> can be particularly useful in Caliban when you want to access data in your resolver that comes from the user request, such as access tokens or user context. It is possible to provide that environment on each request, as we will see in a future article.</p>
+<p>Finally, it is good to know that Caliban uses ZIO under the hood, so regardless of whether you use <code>Future</code>, Monix, ZIO, or Cats Effect, effects are eventually going to be converted to ZIO. That means that you will get the best performance if you use ZIO directly in your schemas. However, the performance loss will usually not be noticeable at all, so it is completely fine to use whatever you are most comfortable with.</p>
+<h3 id="interoperability-with-cats-effect">Interoperability with Cats Effect</h3>
+<p>Cats Effect is another library for building concurrent and asynchronous applications, offering an <code>IO</code> type that is very similar to <code>ZIO</code>’s <code>Task</code> alias: it is lazy, may fail with a <code>Throwable</code>, or succeed with a given type.</p>
+<p>Cats Effect also provides a set of <a href="https://typelevel.org/cats-effect/docs/typeclasses">type classes</a> that you can use if you don’t want your code to use an explicit <code>IO</code> type, but instead an abstract type <code>F[_]</code> with various laws. Using an interop module provided by Caliban (<code>caliban-cats</code>), it is possible to build your schema using an abstract <code>F[_]</code> (or directly <code>IO</code>) with a few modifications.</p>
+<p>Let’s rewrite the same <code>Random</code> example with an abstract <code>F[_]</code>.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="scala"><code><span class="line"><span style="color:#6A737D">//> </span><span style="color:#F97583">using</span><span style="color:#B392F0"> dep</span><span style="color:#9ECBFF"> com.github.ghostdogpr::caliban-cats:2.5.1</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#B392F0"> caliban</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">interop</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">cats</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">implicits</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">*</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#B392F0"> cats</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">effect</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">std</span><span style="color:#E1E4E8">.{</span><span style="color:#B392F0">Dispatcher</span><span style="color:#E1E4E8">, </span><span style="color:#B392F0">Random</span><span style="color:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">def</span><span style="color:#B392F0"> api</span><span style="color:#E1E4E8">[</span><span style="color:#B392F0">F</span><span style="color:#E1E4E8">[_]](</span><span style="color:#F97583">using</span><span style="color:#B392F0"> Dispatcher</span><span style="color:#E1E4E8">[</span><span style="color:#B392F0">F</span><span style="color:#E1E4E8">], </span><span style="color:#B392F0">Random</span><span style="color:#E1E4E8">[</span><span style="color:#B392F0">F</span><span style="color:#E1E4E8">])</span><span style="color:#F97583">:</span><span style="color:#B392F0"> GraphQL</span><span style="color:#E1E4E8">[</span><span style="color:#B392F0">Any</span><span style="color:#E1E4E8">] </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#F97583">  case</span><span style="color:#F97583"> class</span><span style="color:#B392F0"> Query</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">number</span><span style="color:#E1E4E8">: </span><span style="color:#B392F0">F</span><span style="color:#E1E4E8">[</span><span style="color:#B392F0">Int</span><span style="color:#E1E4E8">]) </span><span style="color:#F97583">derives</span><span style="color:#B392F0"> Schema</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">SemiAuto</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#E1E4E8">  println(render[</span><span style="color:#B392F0">Query</span><span style="color:#E1E4E8">])</span></span>
+<span class="line"><span style="color:#6A737D">  // type Query {</span></span>
+<span class="line"><span style="color:#6A737D">  //   number: Int!</span></span>
+<span class="line"><span style="color:#6A737D">  // }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#E1E4E8">  graphQL(</span><span style="color:#B392F0">RootResolver</span><span style="color:#E1E4E8">(</span><span style="color:#B392F0">Query</span><span style="color:#E1E4E8">(number </span><span style="color:#F97583">=</span><span style="color:#B392F0"> Random</span><span style="color:#E1E4E8">[</span><span style="color:#B392F0">F</span><span style="color:#E1E4E8">].nextInt)))</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span></code></pre>
+<p>There are a couple of things required to make this example compile:</p>
+<ul>
+<li>
+<p>For our schema derivation to work, we need a <code>Dispatcher[F]</code> in scope. This will be used to eventually run our effect <code>F</code> and convert it into a ZIO (used under the hood).</p>
+</li>
+<li>
+<p>We also need to import <code>caliban.interop.cats.implicits.*</code> because it contains the necessary implicits for deriving our <code>Schema</code>. This is available in the <code>caliban-cats</code> dependency.</p>
+</li>
+</ul>
+<p>This snippet gives us an API that can be used with any effect <code>F[_]</code> as long as we have a <code>Dispatcher</code> and a <code>Random</code> for it.</p>
+<p>Running the example requires more machinery, as we need to create the <code>Dispatcher</code> and the <code>Random</code> instances. We will use <code>cats.effect.IO</code> as our concrete effect type.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="scala"><code><span class="line"></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#B392F0"> cats</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">effect</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">IO</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#B392F0"> cats</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">effect</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">unsafe</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">implicits</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">global</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">Dispatcher</span></span>
+<span class="line"><span style="color:#E1E4E8">  .parallel[</span><span style="color:#B392F0">IO</span><span style="color:#E1E4E8">]</span></span>
+<span class="line"><span style="color:#E1E4E8">  .use { </span><span style="color:#F97583">case</span><span style="color:#F97583"> given</span><span style="color:#B392F0"> Dispatcher</span><span style="color:#E1E4E8">[</span><span style="color:#B392F0">IO</span><span style="color:#E1E4E8">] </span><span style="color:#F97583">=></span></span>
+<span class="line"><span style="color:#B392F0">    Random</span><span style="color:#E1E4E8">.scalaUtilRandom[</span><span style="color:#B392F0">IO</span><span style="color:#E1E4E8">].flatMap { </span><span style="color:#F97583">case</span><span style="color:#F97583"> given</span><span style="color:#B392F0"> Random</span><span style="color:#E1E4E8">[</span><span style="color:#B392F0">IO</span><span style="color:#E1E4E8">] </span><span style="color:#F97583">=></span></span>
+<span class="line"><span style="color:#B392F0">      IO</span><span style="color:#E1E4E8">.blocking {</span></span>
+<span class="line"><span style="color:#F97583">        import</span><span style="color:#B392F0"> caliban</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">quick</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">*</span></span>
+<span class="line"><span style="color:#E1E4E8">        api[</span><span style="color:#B392F0">IO</span><span style="color:#E1E4E8">].unsafe.runServer(</span><span style="color:#79B8FF">8088</span><span style="color:#E1E4E8">, </span><span style="color:#9ECBFF">"/api/graphql"</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#E1E4E8">      }</span></span>
+<span class="line"><span style="color:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#E1E4E8">  }</span></span>
+<span class="line"><span style="color:#E1E4E8">  .unsafeRunSync()</span></span></code></pre>
+<p>First, we create our <code>Dispatcher</code> and <code>Random</code> instances using utility functions from cats effect, and use <code>case given</code> so that they can be in scope for our <code>using</code> in <code>api</code>. Then, we wrap our <code>runServer</code> call inside <code>IO.blocking</code> because the execution is going to block the current thread.</p>
+<p>Finally, we get an <code>IO</code> as a response, so we also need to call <code>unsafeRunSync</code> to run the whole program (we could also have used <code>IOApp</code>). This might look a little cryptic if you’re not familiar with this style of programming, but if you are, this should be pretty standard: at the end of the day, the only things you need are a special import and a <code>Dispatcher</code> in scope.</p>
+<h3 id="conclusion">Conclusion</h3>
+<p>In this article, we delved into handling side effects in resolvers when using Caliban to create GraphQL APIs in Scala. We explored how to deal with impure functions, asynchronous computations, and different types of effects such as <code>Future</code>, <code>ZIO</code>, and Cats Effect. This should allow you to create resolvers regardless of the libraries you are using in your business logic and whatever your programming style is.</p>
+<p>Having introduced the foundations of ZIO will be useful for future blog posts, where I will look into how you can customize the behavior of your API by running additional computations at various steps of the query processing or by extracting and propagating some contextual data from client requests.</p>  </div> </div> </div> </article> </main>  <footer> <div class="app-container grid md:grid-cols-3 gap-12 py-16 border-t-2 border-foreground/50 dark:border-foreground-dark/50"> <div> <a href="/" class="block w-fit" aria-label="Home"> <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+  <rect width="36" height="36" rx="8" fill="currentColor" opacity="0.1" />
+  <text x="18" y="25" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="currentColor" text-anchor="middle">PR</text>
+</svg> </a> </div> <div> <h3 class="font-semibold text-2xl">Links</h3> <div class="flex flex-wrap gap-4 mt-4"> <a class="text-lg" href target="_blank" rel="noopener noreferrer"> Blog </a><a class="text-lg" href="https://github.com/sponsors/ghostdogpr" target="_blank" rel="noopener noreferrer"> Sponsor </a> <a href="rss.xml" target="_blank" rel="noopener noreferrer" class="text-lg" aria-label="RSS Feed"> <svg width="1em" height="1em" class="w-6 h-6" data-icon="mdi:rss">   <symbol id="ai:mdi:rss" viewBox="0 0 24 24"><path fill="currentColor" d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27zm0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93z"/></symbol><use href="#ai:mdi:rss"></use>  </svg> </a> </div> </div> <div> <h3 class="font-semibold text-2xl">Socials</h3> <div class="flex flex-wrap gap-4 mt-4"> <a class="text-lg" href="https://github.com/ghostdogpr" target="_blank" rel="noopener noreferrer"> GitHub </a><a class="text-lg" href="https://www.linkedin.com/in/pierrericadat/" target="_blank" rel="noopener noreferrer"> LinkedIn </a><a class="text-lg" href="https://twitter.com/ghostdogpr" target="_blank" rel="noopener noreferrer"> X / Twitter </a> </div> </div> </div> <div class="app-container flex justify-between items-center pb-6 text-center"> <p class="text-left md:text-center w-full">
+Theme: <a class="underline" href="https://github.com/yashjawale/saral-theme-astro" target="_blank">Saral</a> </p> </div> </footer> </body></html>
